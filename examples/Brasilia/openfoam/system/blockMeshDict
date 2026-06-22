@@ -1,0 +1,71 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      blockMeshDict;
+}
+
+// Domain extents from City4CFD BPG output (metres, origin at domain centre)
+// X: streamwise (wind direction [1 0 0])  -1700 → 2700
+// Y: lateral                              -1730 → 1700
+// Z: vertical                                 0 →  600
+
+scale 1;
+
+vertices
+(
+    (-1700 -1730    0)   // 0
+    ( 2700 -1730    0)   // 1
+    ( 2700  1700    0)   // 2
+    (-1700  1700    0)   // 3
+    (-1700 -1730  600)   // 4
+    ( 2700 -1730  600)   // 5
+    ( 2700  1700  600)   // 6
+    (-1700  1700  600)   // 7
+);
+
+// Base cell ~20 m:  X 220 cells, Y 172 cells, Z 30 cells
+blocks
+(
+    hex (0 1 2 3 4 5 6 7) (220 172 30) simpleGrading (1 1 4)
+);
+
+edges ();
+
+boundary
+(
+    inlet
+    {
+        type patch;
+        faces ((0 3 7 4));
+    }
+    outlet
+    {
+        type patch;
+        faces ((1 5 6 2));
+    }
+    side1
+    {
+        type symmetryPlane;
+        faces ((0 1 5 4));
+    }
+    side2
+    {
+        type symmetryPlane;
+        faces ((3 7 6 2));
+    }
+    top
+    {
+        type symmetryPlane;
+        faces ((4 5 6 7));
+    }
+    ground
+    {
+        type wall;
+        faces ((0 1 2 3));
+    }
+);
+
+mergePatchPairs ();
