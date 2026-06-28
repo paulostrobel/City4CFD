@@ -36,56 +36,63 @@ PROBES_XY = {
 }
 
 # ── helpers ────────────────────────────────────────────────────────────────
+import tempfile, shutil
+
 def load_level(level):
-    """Load archived solution for a given refinement level."""
-    sol_dir = os.path.join(STUDY_DIR, level, "solution")
+    """Load archived solution for a given refinement level into a temp case."""
+    sol_dir  = os.path.join(STUDY_DIR, level, "solution")
     mesh_dir = os.path.join(STUDY_DIR, level, "polyMesh")
 
-    if not os.path.isdir(sol_dir):
-        print(f"  [{level}] no solution archived — skipping")
+    if not os.path.isdir(sol_dir) or not os.path.isdir(mesh_dir):
+        print(f"  [{level}] not archived yet — skipping")
         return None
 
-    # temporarily swap polyMesh to load this level's mesh + fields
-    orig_mesh = os.path.join(CASE_DIR, "constant", "polyMesh")
-    orig_bak  = orig_mesh + ".bak"
+    # find solution time value
+    time_dirs = [d for d in os.listdir(sol_dir) if d.replace(".", "").isdigit()]
+    if not time_dirs:
+        print(f"  [{level}] no time directories in solution — skipping")
+        return None
+    t     = max(float(d) for d in time_dirs)
+    t_str = str(int(t)) if t == int(t) else str(t)
 
+    # build a self-contained temporary OpenFOAM case
+    tmp = tempfile.mkdtemp(prefix=f"of_{level}_")
     try:
-        # backup current mesh
-        if os.path.isdir(orig_mesh):
-            os.rename(orig_mesh, orig_bak)
-        os.symlink(mesh_dir, orig_mesh)
+        # constant/polyMesh  — symlink archived mesh
+        os.makedirs(os.path.join(tmp, "constant"))
+        os.symlink(mesh_dir, os.path.join(tmp, "constant", "polyMesh"))
 
-        # find time value
-        t = max(
-            float(d) for d in os.listdir(sol_dir)
-            if d.replace(".", "").isdigit()
-        )
-        t_str = str(int(t)) if t == int(t) else str(t)
-        t_dir = os.path.join(CASE_DIR, t_str)
+        # constant/ material files — symlink from live case
+        for f in os.listdir(os.path.join(CASE_DIR, "constant")):
+            src = os.path.join(CASE_DIR, "constant", f)
+            dst = os.path.join(tmp, "constant", f)
+            if not os.path.exists(dst):
+                os.symlink(src, dst)
 
-        # symlink solution time dir into case
-        if not os.path.exists(t_dir):
-            os.symlink(os.path.join(sol_dir, t_str), t_dir)
-            created_tdir = t_dir
-        else:
-            created_tdir = None
+        # system/ — symlink from live case
+        os.symlink(os.path.join(CASE_DIR, "system"), os.path.join(tmp, "system"))
 
-        if not os.path.exists(FOAM_FILE):
-            open(FOAM_FILE, "w").close()
+        # 0/ and solution time dir — symlink from archive
+        os.symlink(os.path.join(CASE_DIR, "0"), os.path.join(tmp, "0"))
+        os.symlink(os.path.join(sol_dir, t_str), os.path.join(tmp, t_str))
 
-        reader = pv.OpenFOAMReader(FOAM_FILE)
+        # touch .foam file
+        foam = os.path.join(tmp, "case.foam")
+        open(foam, "w").close()
+
+        reader = pv.OpenFOAMReader(foam)
         reader.set_active_time_value(t)
         mesh = reader.read()
         vol  = mesh["internalMesh"].cell_data_to_point_data()
         vol["U_mag"] = np.linalg.norm(np.array(vol["U"]), axis=1)
         print(f"  [{level}] loaded t={t}  {vol.n_cells:,} cells")
 
-        # count cells from checkMesh log
+        # cell count from checkMesh log
         n_cells = None
         log_path = os.path.join(STUDY_DIR, level, "log.checkMesh")
         if os.path.exists(log_path):
             for line in open(log_path):
-                if "cells:" in line and "Total" not in line:
+                if "cells:" in line:
                     try:
                         n_cells = int(line.strip().split()[-1])
                     except ValueError:
@@ -94,13 +101,7 @@ def load_level(level):
         return {"vol": vol, "t": t, "n_cells": n_cells, "level": level}
 
     finally:
-        # restore mesh symlinks
-        if os.path.islink(orig_mesh):
-            os.unlink(orig_mesh)
-        if os.path.isdir(orig_bak):
-            os.rename(orig_bak, orig_mesh)
-        if created_tdir and os.path.islink(created_tdir):
-            os.unlink(created_tdir)
+        shutil.rmtree(tmp, ignore_errors=True)
 
 
 def sample_vertical(vol, x, y, z_max=300, n=200):

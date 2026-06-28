@@ -1,0 +1,104 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:                                        |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+Build  : OPENFOAM=1912 patch=200626
+Arch   : "LSB;label=32;scalar=64"
+Exec   : checkMesh
+Date   : Jun 27 2026
+Time   : 10:39:36
+Host   : raspberrypi
+PID    : 37731
+I/O    : uncollated
+Case   : /home/paulo/mydropbox/homelab/City4CFD/examples/Brasilia/openfoam
+nProcs : 1
+trapFpe: Floating point exception trapping enabled (FOAM_SIGFPE).
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster (fileModificationSkew 10)
+allowSystemOperations : Allowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+Create mesh for time = 0
+
+Time = 0
+
+Mesh stats
+    points:           8008258
+    faces:            22152323
+    internal faces:   21242733
+    cells:            7078182
+    faces per cell:   6.1308195
+    boundary patches: 7
+    point zones:      0
+    face zones:       0
+    cell zones:       0
+
+Overall number of cells of each type:
+    hexahedra:     6577143
+    prisms:        126834
+    wedges:        0
+    pyramids:      0
+    tet wedges:    39
+    tetrahedra:    0
+    polyhedra:     374166
+    Breakdown of polyhedra by number of faces:
+        faces   number of cells
+            4   213
+            5   8912
+            6   65283
+            8   2
+            9   251319
+           11   2
+           12   42940
+           14   1
+           15   5121
+           18   363
+           21   10
+
+Checking topology...
+    Boundary definition OK.
+    Cell to face addressing OK.
+    Point usage OK.
+    Upper triangular ordering OK.
+    Face vertices OK.
+    Number of regions: 1 (OK).
+
+Checking patch topology for multiply connected surfaces...
+                   Patch    Faces   Points                  Surface topology
+                   inlet     9160     9430  ok (non-closed singly connected)
+                  outlet     9160     9430  ok (non-closed singly connected)
+                   side1    11760    12095  ok (non-closed singly connected)
+                   side2    11760    12095  ok (non-closed singly connected)
+                     top    67326    67850  ok (non-closed singly connected)
+                  ground   232778   252942  ok (non-closed singly connected)
+               buildings   567646   584536  ok (non-closed singly connected)
+
+Checking faceZone topology for multiply connected surfaces...
+    No faceZones found.
+
+Checking basic cellZone addressing...
+    No cellZones found.
+
+Checking geometry...
+    Overall domain bounding box (-1700 -1730 0) (2700 1700 600)
+    Mesh has 3 geometric (non-empty/wedge) directions (1 1 1)
+    Mesh has 3 solution (non-empty) directions (1 1 1)
+    Boundary openness (-5.6855428e-16 7.4080299e-16 -1.2421151e-13) OK.
+    Max cell openness = 4.2203817e-16 OK.
+    Max aspect ratio = 12.423169 OK.
+    Minimum face area = 0.15811829. Maximum face area = 413.63602.  Face area magnitudes OK.
+    Min volume = 0.16808294. Max volume = 6190.4767.  Total volume = 9.0441785e+09.  Cell volumes OK.
+    Mesh non-orthogonality Max: 64.979018 average: 7.6399202
+    Non-orthogonality check OK.
+    Face pyramids OK.
+    Max skewness = 3.9271753 OK.
+    Coupled point location match (average 0) OK.
+
+Mesh OK.
+
+End
+
