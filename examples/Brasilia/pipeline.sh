@@ -7,14 +7,15 @@
 #   ./pipeline.sh [STAGE]
 #
 # STAGE (default: all)
-#   deps       – install system + Python packages
-#   build      – compile City4CFD
-#   osm        – download OpenStreetMap data
-#   geometry   – run City4CFD to generate OBJ surfaces
-#   stl        – convert OBJ → buildings.stl for snappyHexMesh
-#   mesh       – blockMesh + snappyHexMesh + checkMesh
-#   solve      – run simpleFoam
-#   all        – run every stage in order
+#   deps         – install system + Python packages
+#   build        – compile City4CFD
+#   osm          – download OpenStreetMap data
+#   geometry     – run City4CFD to generate OBJ surfaces
+#   stl          – convert OBJ → buildings.stl for snappyHexMesh
+#   fix-geometry – replace Congress complex with accurate primitives
+#   mesh         – blockMesh + snappyHexMesh + checkMesh
+#   solve        – run simpleFoam
+#   all          – run every stage in order
 #
 # Mesh refinement knobs (edit before running):
 #   BASE_CELL_SIZE  – blockMesh target cell size in metres (default 20)
@@ -131,6 +132,15 @@ export RESULTS="$RESULTS"
 export STL_OUT="$OF_CASE/constant/triSurface/buildings.stl"
 
 # =============================================================================
+stage_fix_geometry() {
+    log "Fixing Congress complex geometry"
+    require_venv
+    cd "$SCRIPT_DIR"
+    [[ -f fix_congress_geometry.py ]] || die "fix_congress_geometry.py not found"
+    "$VENV/bin/python3" fix_congress_geometry.py
+}
+
+# =============================================================================
 stage_mesh() {
     log "Meshing (blockMesh + snappyHexMesh)"
     cd "$OF_CASE"
@@ -174,23 +184,25 @@ STAGE="${1:-all}"
 cd "$SCRIPT_DIR"
 
 case "$STAGE" in
-    deps)     stage_deps ;;
-    build)    stage_build ;;
-    osm)      stage_osm ;;
-    geometry) stage_geometry ;;
-    stl)      stage_stl ;;
-    mesh)     stage_mesh ;;
-    solve)    stage_solve ;;
+    deps)           stage_deps ;;
+    build)          stage_build ;;
+    osm)            stage_osm ;;
+    geometry)       stage_geometry ;;
+    stl)            stage_stl ;;
+    fix-geometry)   stage_fix_geometry ;;
+    mesh)           stage_mesh ;;
+    solve)          stage_solve ;;
     all)
         stage_deps
         stage_build
         stage_osm
         stage_geometry
         stage_stl
+        stage_fix_geometry
         stage_mesh
         stage_solve
         ;;
-    *) die "Unknown stage '$STAGE'. Valid: deps build osm geometry stl mesh solve all" ;;
+    *) die "Unknown stage '$STAGE'. Valid: deps build osm geometry stl fix-geometry mesh solve all" ;;
 esac
 
 log "Done — stage: $STAGE"

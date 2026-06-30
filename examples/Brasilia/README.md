@@ -14,13 +14,14 @@ cd examples/Brasilia
 Run a single stage:
 
 ```bash
-./pipeline.sh deps       # install system + Python packages (needs sudo for apt)
-./pipeline.sh build      # compile City4CFD
-./pipeline.sh osm        # download OSM data into data/
-./pipeline.sh geometry   # generate OBJ surfaces in results/
-./pipeline.sh stl        # merge OBJ buildings → openfoam/constant/triSurface/buildings.stl
-./pipeline.sh mesh       # blockMesh + snappyHexMesh + checkMesh
-./pipeline.sh solve      # simpleFoam (500 iterations)
+./pipeline.sh deps          # install system + Python packages (needs sudo for apt)
+./pipeline.sh build         # compile City4CFD
+./pipeline.sh osm           # download OSM data into data/
+./pipeline.sh geometry      # generate OBJ surfaces in results/
+./pipeline.sh stl           # merge OBJ buildings → openfoam/constant/triSurface/buildings.stl
+./pipeline.sh fix-geometry  # replace Congress complex with accurate primitives (optional)
+./pipeline.sh mesh          # blockMesh + snappyHexMesh + checkMesh
+./pipeline.sh solve         # simpleFoam (500 iterations)
 ```
 
 ## Prerequisites
@@ -129,6 +130,7 @@ ABL parameters: Uref = 5 m/s at z = 10 m, z₀ = 0.5 m (suburban), κ = 0.41.
 
 ## Post-processing
 
+### Manual ParaView
 Open the case in ParaView:
 ```bash
 touch openfoam/Brasilia.foam
@@ -139,6 +141,37 @@ Useful filters for pedestrian wind comfort:
 - **Slice** at z = 1.75 m → horizontal U magnitude map
 - **Streamlines** seeded at inlet → flow paths around the Congress
 - **Plot Over Line** along Esplanada axis → wind speed profile
+
+### Automated plotting scripts
+
+Matplotlib (2-D contours and streamlines):
+```bash
+python3 plot_results.py      # 3-panel: pedestrian slice, ABL profile, 3D streamlines
+python3 plot_contours.py     # 12-panel: velocity/pressure/k/nut at multiple heights + slices
+python3 compare_refinements.py  # refinement study comparison (coarse/medium/fine)
+```
+
+ParaView (high-quality 3-D renderings):
+```bash
+# Set up X display (Pi 5 v3d GPU requires Mesa software rasterization)
+DISPLAY=:0 LIBGL_ALWAYS_SOFTWARE=1 pvbatch paraview_postprocess.py
+
+# Congress complex detail visualisations:
+DISPLAY=:0 LIBGL_ALWAYS_SOFTWARE=1 pvbatch pv_congress_flow.py      # XZ/YZ vertical slices + streamlines
+DISPLAY=:0 LIBGL_ALWAYS_SOFTWARE=1 pvbatch pv_congress_detail.py    # pedestrian-level isosurfaces + streamlines
+DISPLAY=:0 LIBGL_ALWAYS_SOFTWARE=1 pvbatch pv_congress_frontview.py # front-facing architectural view
+```
+
+**Output files** (all .png):
+
+| Script | Output | Description |
+|--------|--------|-------------|
+| `plot_results.py` | `results_cfd.png` | Pedestrian-level |U\| slice (z=1.75m), ABL inlet profile, 3D streamlines |
+| `plot_contours.py` | `contours_cfd.png` | 12-panel: U/p/k/νt at z=1.75/10/50m; XZ/YZ vertical slices; pedestrian zoom |
+| `paraview_postprocess.py` | `pv_U_*` (11 files) | 11 ParaView renders: velocity/pressure/k/νt slices, XZ/YZ planes, 3D streamlines, pedestrian zoom |
+| `pv_congress_flow.py` | 4 files | XZ centreline, YZ N-S section through dome/bowl, streamlines, pedestrian detail |
+| `pv_congress_detail.py` | `pv_congress_pedestrian_detail.png` | Pedestrian-level view with velocity isosurfaces and streamlines |
+| `pv_congress_frontview.py` | `pv_congress_frontview.png` | Front-facing architectural-style view of Congress complex |
 
 ## Known issues / notes
 
