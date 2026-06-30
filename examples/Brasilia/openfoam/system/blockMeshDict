@@ -26,7 +26,7 @@ vertices
     (-1700  1700  600)   // 7
 );
 
-// Base cell ~20 m:  X 220 cells, Y 172 cells, Z 30 cells
+// Base cell ~15 m:  X 294 cells, Y 229 cells, Z 40 cells
 blocks
 (
     hex (0 1 2 3 4 5 6 7) (294 229 40) simpleGrading (1 1 4)
