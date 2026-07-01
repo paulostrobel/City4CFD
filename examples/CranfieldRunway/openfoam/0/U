@@ -1,0 +1,55 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volVectorField;
+    location    "0";
+    object      U;
+}
+
+dimensions      [0 1 -1 0 0 0 0];
+
+internalField   uniform (5 0 0);
+
+boundaryField
+{
+    inlet
+    {
+        // ABL log-law profile: Uref=5 m/s at zRef=10 m, z0=0.03 m (open airfield)
+        // x axis is aligned with runway 03/21 → wind from 214° (prevailing SW)
+        type            atmBoundaryLayerInletVelocity;
+        flowDir         (1 0 0);
+        zDir            (0 0 1);
+        Uref            5.0;
+        Zref            10.0;
+        z0              uniform 0.03;
+        zGround         uniform 0.0;
+        value           uniform (5 0 0);
+    }
+    outlet
+    {
+        type            inletOutlet;
+        inletValue      uniform (0 0 0);
+        value           uniform (5 0 0);
+    }
+    side1
+    {
+        type            symmetryPlane;
+    }
+    side2
+    {
+        type            symmetryPlane;
+    }
+    top
+    {
+        type            symmetryPlane;
+    }
+    ground
+    {
+        type            noSlip;
+    }
+    buildings
+    {
+        type            noSlip;
+    }
+}

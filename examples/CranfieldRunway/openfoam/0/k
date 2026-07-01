@@ -1,0 +1,55 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    location    "0";
+    object      k;
+}
+
+dimensions      [0 2 -2 0 0 0 0];
+
+// k = u*^2 / sqrt(Cmu),  u* = Uref*kappa/ln((zRef+z0)/z0)
+// u* = 5*0.41/ln(10.03/0.03) = 0.353 m/s,  k = 0.353^2/0.3 = 0.41 m2/s2
+internalField   uniform 0.41;
+
+boundaryField
+{
+    inlet
+    {
+        type            atmBoundaryLayerInletK;
+        flowDir         (1 0 0);
+        zDir            (0 0 1);
+        Uref            5.0;
+        Zref            10.0;
+        z0              uniform 0.03;
+        zGround         uniform 0.0;
+        value           uniform 0.41;
+    }
+    outlet
+    {
+        type            zeroGradient;
+    }
+    side1
+    {
+        type            symmetryPlane;
+    }
+    side2
+    {
+        type            symmetryPlane;
+    }
+    top
+    {
+        type            symmetryPlane;
+    }
+    ground
+    {
+        type            kqRWallFunction;
+        value           uniform 0.41;
+    }
+    buildings
+    {
+        type            kqRWallFunction;
+        value           uniform 0.41;
+    }
+}

@@ -1,0 +1,55 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    location    "0";
+    object      epsilon;
+}
+
+dimensions      [0 2 -3 0 0 0 0];
+
+// epsilon = Cmu^0.75 * k^1.5 / (kappa * (z + z0))
+// At z=10m: 0.09^0.75 * 0.41^1.5 / (0.41 * 10.03) = 0.011 m2/s3
+internalField   uniform 0.011;
+
+boundaryField
+{
+    inlet
+    {
+        type            atmBoundaryLayerInletEpsilon;
+        flowDir         (1 0 0);
+        zDir            (0 0 1);
+        Uref            5.0;
+        Zref            10.0;
+        z0              uniform 0.03;
+        zGround         uniform 0.0;
+        value           uniform 0.011;
+    }
+    outlet
+    {
+        type            zeroGradient;
+    }
+    side1
+    {
+        type            symmetryPlane;
+    }
+    side2
+    {
+        type            symmetryPlane;
+    }
+    top
+    {
+        type            symmetryPlane;
+    }
+    ground
+    {
+        type            epsilonWallFunction;
+        value           uniform 0.011;
+    }
+    buildings
+    {
+        type            epsilonWallFunction;
+        value           uniform 0.011;
+    }
+}
