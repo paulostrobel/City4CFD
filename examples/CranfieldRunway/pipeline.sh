@@ -45,7 +45,8 @@ END_TIME=500        # simpleFoam iterations
 # ── helpers ──────────────────────────────────────────────────────────────────
 log()  { echo ""; echo "=== $* ==="; }
 die()  { echo "ERROR: $*" >&2; exit 1; }
-of()   { source "$OF_BASHRC" 2>/dev/null; "$@"; }
+# OpenFOAM's bashrc references unset variables — relax nounset while sourcing
+of()   { set +u; source "$OF_BASHRC" 2>/dev/null; set -u; "$@"; }
 
 require_venv() {
     [[ -x "$VENV/bin/python3" ]] || die "venv not found — run:  ./pipeline.sh deps"

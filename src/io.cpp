@@ -165,7 +165,8 @@ void IO::read_polygons(std::string& file, PolyVecPtr& polygons, std::string* crs
 //                    cityjson_class = inputFeature->GetFieldAsString(class_attribute.c_str());
 //                    continue;
 //                }
-                if (inputFeature->IsFieldNull(currentField)) continue;
+                if (!inputFeature->IsFieldSet(currentField) ||
+                     inputFeature->IsFieldNull(currentField)) continue;
                 switch (inputFeature->GetFieldDefnRef(currentField)->GetType()) {
                     case OFTReal:
                         attributes[inputFeature->GetFieldDefnRef(currentField)->GetNameRef()]
