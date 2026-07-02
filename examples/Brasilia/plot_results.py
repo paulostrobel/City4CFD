@@ -148,7 +148,7 @@ ax2.set_facecolor("#0a0a1a")
 
 # sample U along a vertical line at the Congress building location
 line3d = pv.Line((0, 0, 0.1), (0, 0, 300), resolution=200)
-sampled = vol.sample(line3d)
+sampled = line3d.sample(vol)   # interpolate volume fields onto the line
 z_prof  = np.array(sampled.points)[:, 2]
 U_prof  = np.linalg.norm(np.array(sampled["U"]), axis=1)
 

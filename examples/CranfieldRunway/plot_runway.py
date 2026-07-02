@@ -26,7 +26,7 @@ import matplotlib.cm as cm
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 CASE_DIR   = os.path.join(SCRIPT_DIR, "openfoam")
 STL_PATH   = os.path.join(CASE_DIR, "constant", "triSurface", "buildings.stl")
-TIME       = 500.0
+TIME       = float(os.environ.get("CFD_TIME", 500))   # solution time to plot
 RWY_HALF   = 900.0     # runway half-length [m]
 
 # ── load OpenFOAM solution ──────────────────────────────────────────────────
@@ -57,7 +57,7 @@ ax1 = fig.add_axes([0.03, 0.08, 0.55, 0.88])
 ax1.set_facecolor("#0a0a1a")
 pts = np.array(slice_z.points)
 ax1.scatter(pts[:, 0], pts[:, 1], c=cmap_vel(cmap_norm(slice_z["U_mag"])),
-            s=0.3, linewidths=0, rasterized=True)
+            s=3.0, linewidths=0, rasterized=True)
 
 # building footprints
 bld = pv.read(STL_PATH)
@@ -101,7 +101,7 @@ ax2 = fig.add_axes([0.65, 0.55, 0.31, 0.38])
 ax2.set_facecolor("#0a0a1a")
 
 line = pv.Line((-RWY_HALF, 0, 10.0), (RWY_HALF, 0, 10.0), resolution=400)
-s = vol.sample(line)
+s = line.sample(vol)   # interpolate volume fields onto the line
 x_cl = np.array(s.points)[:, 0]
 U_cl = np.array(s["U"])
 ax2.plot(x_cl, np.linalg.norm(U_cl, axis=1), color="#00aaff", lw=1.5,
@@ -127,7 +127,7 @@ for x_p, colour, label in [(-RWY_HALF, "#00ff88", "RWY 03 threshold"),
                            (0.0,       "#00aaff", "midfield"),
                            (RWY_HALF,  "#ffaa00", "RWY 21 threshold")]:
     line3d = pv.Line((x_p, 0, 0.1), (x_p, 0, 300), resolution=200)
-    sampled = vol.sample(line3d)
+    sampled = line3d.sample(vol)   # interpolate volume fields onto the line
     z_prof = np.array(sampled.points)[:, 2]
     U_prof = np.linalg.norm(np.array(sampled["U"]), axis=1)
     ax3.plot(U_prof, z_prof, color=colour, lw=1.5, label=label)
