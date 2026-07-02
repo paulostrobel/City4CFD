@@ -58,6 +58,9 @@ def main():
     ap.add_argument("--results", default="results")
     ap.add_argument("--runway", default="data/cranfield_runway.geojson")
     ap.add_argument("--out", default="openfoam/constant/triSurface/buildings.stl")
+    ap.add_argument("--glob", default="Cranfield_Runway_Buildings_*.obj",
+                    help="OBJ file pattern in the results dir to merge/rotate "
+                         "(e.g. Cranfield_Runway_Runway.obj for the aeroway layer)")
     args = ap.parse_args()
 
     az = runway_azimuth(args.runway)
@@ -73,10 +76,9 @@ def main():
     print(f"Rotating scene by {-math.degrees(phi):.2f}° about z "
           f"(runway 03/21 → +x)")
 
-    obj_files = sorted(glob.glob(os.path.join(args.results,
-                                              "Cranfield_Runway_Buildings_*.obj")))
+    obj_files = sorted(glob.glob(os.path.join(args.results, args.glob)))
     if not obj_files:
-        sys.exit(f"No building OBJ files in {args.results}/ — "
+        sys.exit(f"No OBJ files matching {args.glob} in {args.results}/ — "
                  "run the geometry stage first")
 
     meshes = [trimesh.load(p, force="mesh") for p in obj_files]
@@ -86,7 +88,9 @@ def main():
     lo, hi = combined.bounds
     print(f"Rotated extents: x {lo[0]:.0f}..{hi[0]:.0f}  "
           f"y {lo[1]:.0f}..{hi[1]:.0f}  z {lo[2]:.1f}..{hi[2]:.1f}")
-    if hi[0] > 2300 or lo[0] < -1800 or hi[1] > 1600 or lo[1] < -1600:
+    # the domain-fit check is calibrated for the buildings; skip for other layers
+    if args.glob.startswith("Cranfield_Runway_Buildings") and \
+            (hi[0] > 2300 or lo[0] < -1800 or hi[1] > 1600 or lo[1] < -1600):
         print("WARNING: geometry exceeds the blockMesh box "
               "(X -1800..2300, Y -1600..1600) — enlarge system/blockMeshDict")
 

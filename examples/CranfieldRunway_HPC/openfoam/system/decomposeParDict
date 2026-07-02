@@ -1,0 +1,23 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      decomposeParDict;
+}
+
+// scotch balances the load automatically for the strongly non-uniform
+// snappy refinement around the buildings/runway — do not use geometric
+// (simple/hierarchical) decomposition for this case.
+numberOfSubdomains 128;
+
+method          scotch;
+
+// fallback when the OpenFOAM build lacks scotch (e.g. Ubuntu packages):
+// set  method hierarchical;  and make n multiply to numberOfSubdomains
+hierarchicalCoeffs
+{
+    n           (2 2 1);
+    order       xyz;
+}

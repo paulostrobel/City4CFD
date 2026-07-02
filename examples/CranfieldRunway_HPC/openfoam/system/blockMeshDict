@@ -1,0 +1,72 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      blockMeshDict;
+}
+
+// HPC background mesh — 10 m base cells (~3.94M) before snappy refinement.
+// Same runway-aligned frame and extents as examples/CranfieldRunway:
+// X: streamwise (runway axis)   -1800 → 2300
+// Y: lateral                    -1600 → 1600
+// Z: vertical                       0 →  300
+
+scale 1;
+
+vertices
+(
+    (-1800 -1600    0)   // 0
+    ( 2300 -1600    0)   // 1
+    ( 2300  1600    0)   // 2
+    (-1800  1600    0)   // 3
+    (-1800 -1600  300)   // 4
+    ( 2300 -1600  300)   // 5
+    ( 2300  1600  300)   // 6
+    (-1800  1600  300)   // 7
+);
+
+// Base cell ~10 m:  X 410 cells, Y 320 cells, Z 30 cells
+blocks
+(
+    hex (0 1 2 3 4 5 6 7) (410 320 30) simpleGrading (1 1 4)
+);
+
+edges ();
+
+boundary
+(
+    inlet
+    {
+        type patch;
+        faces ((0 3 7 4));
+    }
+    outlet
+    {
+        type patch;
+        faces ((1 5 6 2));
+    }
+    side1
+    {
+        type symmetryPlane;
+        faces ((0 1 5 4));
+    }
+    side2
+    {
+        type symmetryPlane;
+        faces ((3 7 6 2));
+    }
+    top
+    {
+        type symmetryPlane;
+        faces ((4 5 6 7));
+    }
+    ground
+    {
+        type wall;
+        faces ((0 1 2 3));
+    }
+);
+
+mergePatchPairs ();

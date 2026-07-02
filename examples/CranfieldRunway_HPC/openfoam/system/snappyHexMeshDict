@@ -1,0 +1,128 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      snappyHexMeshDict;
+}
+
+// HPC refinement: high detail on both the buildings and the runway.
+// With the 10 m background mesh:
+//   buildings surface level (3 4)          → 1.25–0.625 m cells on walls
+//   ≤20 m of buildings   level 4           → 0.625 m
+//   ≤50 m of buildings   level 3           → 1.25 m
+//   ≤8 m above runway/taxiway/apron lvl 3  → 1.25 m
+//   ≤24 m above runway   level 2           → 2.5 m
+// runway.stl is coplanar with the domain floor, so it is used only as a
+// distance-mode refinement region (never snapped) — the patch set stays
+// identical to the workstation case and the parent 0/ fields apply unchanged.
+
+castellatedMesh true;
+snap            true;
+addLayers       false;
+
+geometry
+{
+    buildings.stl
+    {
+        type triSurfaceMesh;
+        name buildings;
+    }
+    runway.stl
+    {
+        type triSurfaceMesh;
+        name runway;
+    }
+}
+
+castellatedMeshControls
+{
+    maxLocalCells       20000000;
+    maxGlobalCells      120000000;
+    minRefinementCells  10;
+    maxLoadUnbalance    0.10;
+    nCellsBetweenLevels 3;
+    resolveFeatureAngle 30;
+
+    features ();
+
+    refinementSurfaces
+    {
+        buildings
+        {
+            level (3 4);
+            patchInfo
+            {
+                type wall;
+            }
+        }
+    }
+
+    refinementRegions
+    {
+        buildings
+        {
+            mode distance;
+            levels ((20 4) (50 3));
+        }
+        runway
+        {
+            mode distance;
+            levels ((8 3) (24 2));
+        }
+    }
+
+    // Point inside the fluid domain, upstream of the runway threshold
+    locationInMesh (-1750 10 50);
+
+    allowFreeStandingZoneFaces true;
+}
+
+snapControls
+{
+    nSmoothPatch        3;
+    tolerance           2.0;
+    nSolveIter          30;
+    nRelaxIter          5;
+    nFeatureSnapIter    10;
+    implicitFeatureSnap false;
+    explicitFeatureSnap false;
+    multiRegionFeatureSnap false;
+}
+
+addLayersControls
+{
+    relativeSizes true;
+    layers {}
+    expansionRatio      1.2;
+    finalLayerThickness 0.3;
+    minThickness        0.1;
+    nGrow               0;
+    featureAngle        60;
+    nRelaxIter          3;
+    nSmoothSurfaceNormals 1;
+    nSmoothNormals      3;
+    nSmoothThickness    10;
+    maxFaceThicknessRatio 0.5;
+    maxThicknessToMedialRatio 0.3;
+    minMedialAxisAngle  90;
+    nBufferCellsNoExtrude 0;
+    nLayerIter          50;
+}
+
+meshQualityControls
+{
+    #include "meshQualityDict"
+    nSmoothScale        4;
+    errorReduction      0.75;
+}
+
+writeFlags
+(
+    scalarLevels
+    layerSets
+    layerFields
+);
+
+mergeTolerance 1e-6;
