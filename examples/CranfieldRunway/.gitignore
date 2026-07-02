@@ -1,0 +1,9 @@
+data/
+*.foam
+openfoam/log.*
+openfoam/constant/polyMesh/
+openfoam/constant/extendedFeatureEdgeMesh/
+openfoam/[1-9]*/
+openfoam/0/cellLevel
+openfoam/0/pointLevel
+openfoam/processor*/

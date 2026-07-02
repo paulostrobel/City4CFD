@@ -1,0 +1,74 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      blockMeshDict;
+}
+
+// Rotated frame: x is aligned with runway 03/21 (true bearing ~034°),
+// origin at the runway midpoint (City4CFD point_of_interest).
+// Wind from 214° (prevailing SW) → inlet at x-min, flow along the runway.
+//
+// X: streamwise (runway axis)   -1800 → 2300
+// Y: lateral                    -1600 → 1600
+// Z: vertical                       0 →  300
+
+scale 1;
+
+vertices
+(
+    (-1800 -1600    0)   // 0
+    ( 2300 -1600    0)   // 1
+    ( 2300  1600    0)   // 2
+    (-1800  1600    0)   // 3
+    (-1800 -1600  300)   // 4
+    ( 2300 -1600  300)   // 5
+    ( 2300  1600  300)   // 6
+    (-1800  1600  300)   // 7
+);
+
+// Base cell ~20 m:  X 205 cells, Y 160 cells, Z 15 cells
+blocks
+(
+    hex (0 1 2 3 4 5 6 7) (205 160 15) simpleGrading (1 1 4)
+);
+
+edges ();
+
+boundary
+(
+    inlet
+    {
+        type patch;
+        faces ((0 3 7 4));
+    }
+    outlet
+    {
+        type patch;
+        faces ((1 5 6 2));
+    }
+    side1
+    {
+        type symmetryPlane;
+        faces ((0 1 5 4));
+    }
+    side2
+    {
+        type symmetryPlane;
+        faces ((3 7 6 2));
+    }
+    top
+    {
+        type symmetryPlane;
+        faces ((4 5 6 7));
+    }
+    ground
+    {
+        type wall;
+        faces ((0 1 2 3));
+    }
+);
+
+mergePatchPairs ();

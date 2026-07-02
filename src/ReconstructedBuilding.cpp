@@ -105,10 +105,15 @@ ReconstructedBuilding::ReconstructedBuilding(const Polygon_with_attr& poly)
     // Check for the building height attribute
     auto buildingHeightAttrIt = poly.attributes.find(Config::get().buildingHeightAttribute);
     auto numFloorsAttrIt = poly.attributes.find(Config::get().floorAttribute);
-    if (buildingHeightAttrIt != poly.attributes.end()) {
-        m_attributeHeight = std::stod(buildingHeightAttrIt->second);
-    } else if (numFloorsAttrIt != poly.attributes.end()) { // Check for the number of floors attribute
-        m_attributeHeight = std::stod(numFloorsAttrIt->second) * Config::get().floorHeight;
+    try {
+        if (buildingHeightAttrIt != poly.attributes.end()) {
+            m_attributeHeight = std::stod(buildingHeightAttrIt->second);
+        } else if (numFloorsAttrIt != poly.attributes.end()) { // Check for the number of floors attribute
+            m_attributeHeight = std::stod(numFloorsAttrIt->second) * Config::get().floorHeight;
+        }
+    } catch (std::exception& e) { // treat unparsable values as missing height info
+        m_attributeHeight = -global::largnum;
+        Config::write_to_log("Building ID:" + m_id + " has an unparsable height/floor attribute value");
     }
     if (!this->is_active()) { // It can only fail if the polygon is not simple
         this->mark_as_failed();

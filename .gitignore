@@ -8,3 +8,19 @@ Mesh*.json
 *.stl
 *.swp
 *.log
+.venv/
+
+# CranfieldRunway_HPC: generated at setup/mesh time (symlinks, parent copies, decomposition)
+examples/CranfieldRunway_HPC/data
+examples/CranfieldRunway_HPC/results
+examples/CranfieldRunway_HPC/openfoam/0/
+examples/CranfieldRunway_HPC/openfoam/constant/
+examples/CranfieldRunway_HPC/openfoam/processor*/
+examples/CranfieldRunway_HPC/openfoam/system/fvSchemes
+examples/CranfieldRunway_HPC/openfoam/system/fvSolution
+examples/CranfieldRunway_HPC/openfoam/system/meshQualityDict
+examples/CranfieldRunway_HPC/openfoam/0.orig/
+
+# OpenFOAM runtime artifacts
+log.*
+*.foam

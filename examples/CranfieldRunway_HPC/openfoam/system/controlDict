@@ -1,0 +1,33 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      controlDict;
+}
+
+application     simpleFoam;
+
+startFrom       latestTime;
+startTime       0;
+stopAt          endTime;
+endTime         500;
+
+deltaT          1;
+
+writeControl    timeStep;
+writeInterval   100;
+purgeWrite      2;
+
+// binary writes: at >50M cells ascii I/O dominates the run time
+writeFormat     binary;
+writePrecision  8;
+writeCompression off;
+
+timeFormat      general;
+timePrecision   6;
+
+runTimeModifiable true;
+
+libs ("libatmosphericModels.so");
